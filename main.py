@@ -52,7 +52,6 @@ print(articles)
 
 
 
-# openai.api_key ='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'#將 key 寫在 .txt 裡面
 
 
 # # openai.api_key = os.getenv("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")
