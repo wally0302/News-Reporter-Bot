@@ -16,8 +16,6 @@ def main():
     driver = webdriver.Chrome(options=options)
     # 前往指定網址，網頁連線
     driver.get("https://www.cryptocity.tw/")
-
-
     # link 列表
     links=[]
     # 文章標題 列表
@@ -70,7 +68,11 @@ def main():
     #     print('='*30)
     driver.close()
 
-    openai.api_key ='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'#將 key 寫在 .txt 裡面
+    with open('API.txt', 'r', encoding='utf-8') as file:
+        content = file.read()
+
+
+    openai.api_key =content 
 
 
     # openai.api_key = os.getenv("openai_api_key")
