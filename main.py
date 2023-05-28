@@ -54,8 +54,6 @@ print(articles)
 
 
 
-# # openai.api_key = os.getenv("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")
-
 # completion = openai.ChatCompletion.create(
 #   model="gpt-3.5-turbo",
 #   messages=[
