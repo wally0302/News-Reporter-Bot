@@ -13,8 +13,8 @@ driver.get("https://www.ptt.cc/bbs/Stock/index.html")
 #print(driver.page_source)
 
 #搜尋 class 屬性是 title 的所有標籤
-tags=driver.find_elements(By.CLASS_NAME, 'news-text d-flex jc-start ac-center flex-wrap') #類別名稱定位 
-# print(tags)
+tags=driver.find_elements(By.CLASS_NAME, 'title') #類別名稱定位 
+print(tags)
 
 #逐一取出標籤內容
 for tag in tags:
@@ -22,9 +22,9 @@ for tag in tags:
     title=tag.text
     #取得標籤中的超連結
     #(返回第一個出現 a 標籤)
-    # link=tag.find_element(By.TAG_NAME, 'a').get_attribute('href') #標籤定位 
+    link=tag.find_element(By.TAG_NAME, 'a').get_attribute('href') #標籤定位 
     print(title)
-    # print(link)
+    print(link)
     print('=====================')
 
 
