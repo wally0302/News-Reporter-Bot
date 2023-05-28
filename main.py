@@ -6,6 +6,8 @@ from selenium.webdriver.chrome.options import Options
 import os
 import openai
 
+import datetime
+
 #設定 driver 位置
 options=Options()
 options.chrome_executable_path='C:\\Users\\user\\Desktop\\chromedriver.exe'
@@ -13,24 +15,44 @@ options.chrome_executable_path='C:\\Users\\user\\Desktop\\chromedriver.exe'
 driver = webdriver.Chrome(options=options)
 # 前往指定網址，網頁連線
 driver.get("https://www.cryptocity.tw/")
-#取得網頁原始碼
-#print(driver.page_source)
 
-# 建一個 list 存 link
+
+
+# link 列表
 links=[]
-# 存 文章列表
+# 文章標題 列表
+titles=[]
+# 文章內容 列表
 articles=[]
+
+#取得今天日期，將 - 替換成 .
+today = datetime.date.today()
+today = str(today).replace('-', '.') #2023.05.28
+
+today = '2023.05.26'
+
 
 #搜尋 class 屬性是 news-text d-flex jc-start ac-center flex-wrap 的所有標籤
 tags=driver.find_elements(By.CLASS_NAME, 'news-text.d-flex.jc-start.ac-center.flex-wrap') #類別名稱定位 
 
 # 先爬每個文章的連結
 for tag in tags:
-    #取得標籤中的超連結
-    #(返回第一個出現 a 標籤)
-    link=tag.find_element(By.TAG_NAME, 'a').get_attribute('href') #標籤定位 
-    #將link加入links陣列
-    links.append(link)
+    # 取得文章日期
+    date=tag.find_element(By.CLASS_NAME, 'bd3-n').text 
+
+    # 如果文章日期是今天
+    if today in date:
+        # 文章標題
+        title=tag.text
+        #將title加入titles
+        titles.append(title)
+        #取得標籤中的超連結
+        #(返回第一個出現 a 標籤)
+        link=tag.find_element(By.TAG_NAME, 'a').get_attribute('href') #標籤定位 
+
+        #將link加入links
+        links.append(link)
+
 
 # 再爬每個文章的內容
 for i in range(len(links)):
@@ -42,20 +64,24 @@ for i in range(len(links)):
     #將content加入articles陣列
     articles.append(content)
 
+for i in range(len(links)):
+    print(titles[i])
+    print('網址: ' + links[i])
+    print('='*30)
+    
 
 driver.close()
 
-print(articles)
 
 
 
 
 
 
-# openai.api_key ='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'#將 key 寫在 .txt 裡面
+# openai.api_key ='openai_api_key'#將 key 寫在 .txt 裡面
 
 
-# # openai.api_key = os.getenv("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")
+# # openai.api_key = os.getenv("openai_api_key")
 
 # completion = openai.ChatCompletion.create(
 #   model="gpt-3.5-turbo",
