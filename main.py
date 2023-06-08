@@ -1,117 +1,204 @@
-# 載入 selenium 相關模組
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-# openai 相關模組
+import json
 import os
-import openai
+import requests
+from bs4 import BeautifulSoup
 import datetime
+import openai
+import telebot
+from telepot.loop import MessageLoop
+from pprint import pprint
+# #Aws
+import boto3
+import logging
+#定時
+# from apscheduler.schedulers.blocking import BlockingScheduler
+
+
+
+#進入該網站
+def get_web_page(url):
+    r = requests.get(url) #將網頁資料GET下來
+    soup = BeautifulSoup(r.text,"html.parser") #將網頁資料以html.parser
+
+    #該網站的標題
+    title = soup.find('h1',class_='story-title')
+
+    #存文章內容的 array
+    context=[]
+    #取得該網站的 p tag
+    total = soup.find_all('p')
+    #取得該網站的 p tag 的文字，最後一個p tag是廣告，所以不要
+    for i in range(0,len(total)-1):
+        context.append(total[i].text)
+
+    
+    #創建一個 key-value 的 dictionary
+    data = {}
+    #將 title 加進 dictionary
+    data['title'] = title.text
+    #將 context 加進 dictionary
+    data['context'] = context
+    #將 url 加進 dictionary
+    data['url'] = url
+
+    
+    #將 data 傳給 chatGpt3
+    get_outline(data)
+
+#把 dictionary 丟給chatGpt3 整理成大綱
+def get_outline(data):
+    # openai api key 替換成自己的
+    openai.api_key ='輸入你 openai api key'
+
+
+    #將 data['context'] 轉成 string
+    articles = ''.join(data['context'])
+
+    #跟 gpt 溝通
+    completion = openai.ChatCompletion.create(
+      model="gpt-3.5-turbo",
+      messages=[
+        {"role": "system", "content": "將以下內容整理成100字的摘要，並使用台灣最常用的正體中文表達:"},
+        {"role": "user", "content": articles},
+      ]
+    )
+    #gpt 回傳的結果
+    ans=completion.choices[0].message
+
+
+
+    print('標題 : '+data['title'])
+    print("\n")
+    print('網址 : '+data['url'])
+    print("\n")
+    print('大綱 : '+ans['content'])
+    print("\n")
+    print("--------------------------------------------------")
+    
+    #另外存成 json 檔，給 bot 使用
+    save_output_as_json(data, ans['content'])
+    
+    telebot.send_daily_message(data,ans)
+    # #傳給 bot
+    # while True:
+
+    #     current_time = time.strftime('%H:%M')
+
+    #     if current_time == '09:00':
+    #         telebot.send_daily_message(data,ans)
+
+    #     time.sleep(60)  # 等待一分鐘
+
+def save_output_as_json(data,ans):
+
+    # 檔案名稱
+    json_file = 'article_' + str(datetime.date.today()) + '.json'  # article_2023-06-05.json
+
+    try:
+        # 嘗試讀取現有資料
+        with open(json_file, 'r', encoding='utf-8') as f:
+            original_data = json.load(f)
+    except FileNotFoundError:
+        # 若檔案不存在，創建一個空的資料列表
+        original_data = []
+
+    # 新資料
+    output = {
+        '標題': data['title'],
+        '網址': data['url'],
+        '大綱': ans
+    }
+
+    # 將新資料附加到原有資料後面
+    original_data.append(output)
+
+    # 將資料寫入 JSON 檔案
+    with open(json_file, 'w', encoding='utf-8') as f:
+        json.dump(original_data, f, indent=2, ensure_ascii=False)
+    
+    result_upload = upload_file(json_file, "wallys3demo", json_file)
+    if result_upload :
+        print("bucket file uploaded successfully..!")
+    else:
+        print("bucket file upload failed..!")
+
+#s3 服務
+def upload_file(file_name, bucket, object_name=None):
+    # If S3 object_name was not specified, use file_name
+    if object_name is None:
+        object_name = os.path.basename(file_name)
+
+    # Upload the file
+    s3_client = boto3.client('s3')
+    try:
+        response = s3_client.upload_file(file_name, bucket, object_name)
+    except Exception as e:
+        logging.error(e)
+        return False
+    return True
+    
+
+
 
 
 def main():
-    #設定 driver 位置
-    options=Options()
-    options.chrome_executable_path='C:\\Users\\user\\Desktop\\chromedriver.exe'
-    # 建立 driver 物件實體，用程式操作瀏覽器
-    driver = webdriver.Chrome(options=options)
-    # 前往指定網址，網頁連線
-    driver.get("https://www.cryptocity.tw/")
-    # link 列表
-    links=[]
-    # 文章標題 列表
+    r = requests.get("https://thehackernews.com/") #將網頁資料GET下來
+    soup = BeautifulSoup(r.text,"html.parser") #將網頁資料以html.parser
+
+    #今天日期
+    today = datetime.date.today()
+    formatted_date = today.strftime("%b %d, %Y")# Jun 05, 2023
+
+    #取得class="body-post clear"的tag
+    total = soup.find_all('div',class_='body-post clear')
+
+    #array
     titles=[]
-    # 文章內容 列表
-    articles=[]
+    links=[]
+    dates=[]
 
-    #取得今天日期，將 - 替換成 .
-    # today = datetime.date.today()
-    # today = str(today).replace('-', '.') #2023.05.28
+    for i in range(len(total)):
+    #取得class="body-post clear"底下的 title、link、date
+        #標題
+        title = total[i].find('h2',class_='home-title')
+        #加進去array
+        titles.append(title.text)
+        #超連結
+        link = total[i].find('a',class_='story-link')
+        links.append(link.get('href'))
+        #日期，如果找不到日期則顯示None
+        if(total[i].find('span',class_='h-datetime') == None):
+            dates.append(None)
+        else:
+            #去除第一個符號
+            dates.append(total[i].find('span',class_='h-datetime').text[1:])
+    #bot
+    MessageLoop(telebot.botID, telebot.handle).run_as_thread()  # 開啟監聽
+    print("I'm listening...")
 
-    # today = '2023.05.26'
+    # get_web_page(links[0])
 
-
-    #搜尋 class 屬性是 news-text d-flex jc-start ac-center flex-wrap 的所有標籤
-    tags=driver.find_elements(By.CLASS_NAME, 'news-text.d-flex.jc-start.ac-center.flex-wrap') #類別名稱定位 
-
-    dates=driver.find_elements(By.CSS_SELECTOR, ".bd3-n.time1") #類別名稱定位 
-    for date in dates:
-        print(date.text)
-    # index=5
-    # 先爬每個文章的連結
-    # for tag in tags:
-    #     # 文章標題
-    #     # titles=tag.find_element(By.CLASS_NAME, 'h5.title-box').text 
-    #     # date=driver.find_element(By.XPATH, '//*[@id="news-list"]/div/div/div/div[%d]/div/div/div/p'%(index)) #類別名稱定位 
-    #     # print(date.get_attribute('innerHTML'))
-    #     date=driver.find_element(By.CLASS_NAME, "bd3-n.time1")
-    #     print(date.text)
-    #     # print(titles)
-
-
-    # //*[@id="news-list"]/div/div/div/div[5]/div/div/div/p
-    # //*[@id="news-list"]/div/div/div/div[6]/div/div/div/p
-    #     date=tag.find_element(By.CLASS_NAME, 'bd3-n').text 
-    #     print(":"+date)
-    # # print(date[0])
-    #     # 如果文章日期是今天
-    #     if today in date:
-    #         # 文章標題
-    #         title=tag.text
-    #         #將title加入titles
-    #         titles.append(title)
-    #         #取得標籤中的超連結
-    #         #(返回第一個出現 a 標籤)
-    #         link=tag.find_element(By.TAG_NAME, 'a').get_attribute('href') #標籤定位 
-
-    #         #將link加入links
-    #         links.append(link)
+    # 如果日期是今天，就進去該網站
+    for i in range(len(dates)):
+        if(dates[i]==formatted_date):
+            get_web_page(links[i])
 
 
-    # # 再爬每個文章的內容
-    # for i in range(len(links)):
-    #     #前往第 i 篇文章
-    #     driver.get(links[i])
-    #     #搜尋 class 屬性是 news-editor 的所有標籤
-    #     #文章內容
-    #     content=driver.find_element(By.CLASS_NAME, 'news-editor').text
-    #     #將content加入articles陣列
-    #     articles.append(content)
-
-    # for i in range(len(links)):
-    #     print(titles[i])
-    #     print('網址: ' + links[i])
-    #     print('='*30)
-    driver.quit()
-
-    # with open('API.txt', 'r', encoding='utf-8') as file:
-    #     content = file.read()
 
 
-    # openai.api_key =content 
+    # while True:
 
+    #     current_time = time.strftime('%H:%M')
 
-    # # openai.api_key = os.getenv("openai_api_key")
+    #     if current_time == '08:30':
+    #         telebot.send_daily_message()
 
-    # completion = openai.ChatCompletion.create(
-    #   model="gpt-3.5-turbo",
-    #   messages=[
-    #     {"role": "system", "content": "將以下內容整理成50字的摘要，並使用台灣最常用的正體中文表達:"},
-    #     {"role": "user", "content": articles[0]},
-    #   ]
-    # )
-    # ans=completion.choices[0].message
-
-    # # 這裡是要傳給 bot 印出來的
-    # print(today)
-    # print('加密城市')
-    # print('Title:')
-    # print(titles[0])
-    # print('Summary:')
-    # print(ans['content'])
-    # print('Link:')
-    # print(links[0])
-    # print('='*10)
+    #     time.sleep(60)  # 等待一分鐘
 
 main()
+# 指定時區（一定要指定，否則會失敗）
+# scheduler = BlockingScheduler(timezone="Asia/Shanghai")
 
+# scheduler.add_job(main, 'cron', day_of_week='1-6', hour=13, minute=6)
 
+# scheduler.start()

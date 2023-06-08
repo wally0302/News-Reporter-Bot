@@ -1,0 +1,6 @@
+beautifulsoup4
+boto3
+openai
+requests
+telebot
+telepot
