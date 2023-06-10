@@ -4,16 +4,15 @@ import requests
 from bs4 import BeautifulSoup
 import datetime
 import openai
-import telebot
-from telepot.loop import MessageLoop
-from pprint import pprint
+import telepot
+
 # #Aws
-import boto3
-import logging
-#定時
-# from apscheduler.schedulers.blocking import BlockingScheduler
+# import boto3
+# import logging
 
 
+# bot ID
+botID = telepot.Bot('6017449076:AAER3OOrIPdw93ACASumlrCqNn7-14u4soA')
 
 #進入該網站
 def get_web_page(url):
@@ -48,7 +47,7 @@ def get_web_page(url):
 #把 dictionary 丟給chatGpt3 整理成大綱
 def get_outline(data):
     # openai api key 替換成自己的
-    openai.api_key ='輸入你 openai api key'
+    openai.api_key ='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'
 
 
     #將 data['context'] 轉成 string
@@ -57,6 +56,7 @@ def get_outline(data):
     #跟 gpt 溝通
     completion = openai.ChatCompletion.create(
       model="gpt-3.5-turbo",
+      #以繁體中文回答，並用項目符號條列式整理重點:
       messages=[
         {"role": "system", "content": "將以下內容整理成100字的摘要，並使用台灣最常用的正體中文表達:"},
         {"role": "user", "content": articles},
@@ -74,20 +74,28 @@ def get_outline(data):
     print('大綱 : '+ans['content'])
     print("\n")
     print("--------------------------------------------------")
+    send_daily_message(data,ans)
     
+# bot 發送訊息
+def send_daily_message(data,ans):
+    with open('user_ids.txt', 'r') as file:
+        user_ids = file.read().splitlines()
+    
+    message = '標題 : ' + data['title'] + '\n\n' \
+              '網址 : ' + data['url']+ '\n\n' \
+              '大綱 : ' + ans['content'] + '\n\n' \
+    
+
+    for user_id in user_ids:
+        botID.sendMessage(user_id, message)
+
+
+
+
     #另外存成 json 檔，給 bot 使用
     save_output_as_json(data, ans['content'])
     
-    telebot.send_daily_message(data,ans)
-    # #傳給 bot
-    # while True:
 
-    #     current_time = time.strftime('%H:%M')
-
-    #     if current_time == '09:00':
-    #         telebot.send_daily_message(data,ans)
-
-    #     time.sleep(60)  # 等待一分鐘
 
 def save_output_as_json(data,ans):
 
@@ -116,32 +124,32 @@ def save_output_as_json(data,ans):
     with open(json_file, 'w', encoding='utf-8') as f:
         json.dump(original_data, f, indent=2, ensure_ascii=False)
     
-    result_upload = upload_file(json_file, "wallys3demo", json_file)
-    if result_upload :
-        print("bucket file uploaded successfully..!")
-    else:
-        print("bucket file upload failed..!")
+#     result_upload = upload_file(json_file, "wallys3demo", json_file)
+#     if result_upload :
+#         print("bucket file uploaded successfully..!")
+#     else:
+#         print("bucket file upload failed..!")
 
-#s3 服務
-def upload_file(file_name, bucket, object_name=None):
-    # If S3 object_name was not specified, use file_name
-    if object_name is None:
-        object_name = os.path.basename(file_name)
+# #s3 服務
+# def upload_file(file_name, bucket, object_name=None):
+#     # If S3 object_name was not specified, use file_name
+#     if object_name is None:
+#         object_name = os.path.basename(file_name)
 
-    # Upload the file
-    s3_client = boto3.client('s3')
-    try:
-        response = s3_client.upload_file(file_name, bucket, object_name)
-    except Exception as e:
-        logging.error(e)
-        return False
-    return True
+#     # Upload the file
+#     s3_client = boto3.client('s3')
+#     try:
+#         response = s3_client.upload_file(file_name, bucket, object_name)
+#     except Exception as e:
+#         logging.error(e)
+#         return False
+#     return True
     
 
 
 
 
-def main():
+def get():
     r = requests.get("https://thehackernews.com/") #將網頁資料GET下來
     soup = BeautifulSoup(r.text,"html.parser") #將網頁資料以html.parser
 
@@ -172,9 +180,7 @@ def main():
         else:
             #去除第一個符號
             dates.append(total[i].find('span',class_='h-datetime').text[1:])
-    #bot
-    MessageLoop(telebot.botID, telebot.handle).run_as_thread()  # 開啟監聽
-    print("I'm listening...")
+
 
     # get_web_page(links[0])
 
@@ -195,10 +201,13 @@ def main():
 
     #     time.sleep(60)  # 等待一分鐘
 
-main()
 # 指定時區（一定要指定，否則會失敗）
 # scheduler = BlockingScheduler(timezone="Asia/Shanghai")
 
 # scheduler.add_job(main, 'cron', day_of_week='1-6', hour=13, minute=6)
 
 # scheduler.start()
+
+
+#bot、main分開寫
+#bot.py 一直跑，main.py 每天執行一次 
