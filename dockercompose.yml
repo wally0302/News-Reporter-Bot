@@ -2,10 +2,11 @@ version: '3'
 services:
   myapp:
     build:
-      context: .
+      context: ./
       dockerfile: Dockerfile
     volumes:
       - ./user_ids.txt:/app/user_ids.txt
+      - /etc/localtime:/etc/localtime:ro
     restart: always
     environment:
       - openAI_API_KEY=${openAI_API_KEY}

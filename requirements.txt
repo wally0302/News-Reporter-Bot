@@ -4,4 +4,3 @@ openai
 requests
 telebot
 telepot
-os

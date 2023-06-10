@@ -4,11 +4,11 @@ from telepot.loop import MessageLoop
 from pprint import pprint
 import climb
 import os 
-
+import sys
+print('123')
 
 # bot ID
-# bot_api_key = os.environ.get('bot_API_KEY')
-bot_api_key='6017449076:AAER3OOrIPdw93ACASumlrCqNn7-14u4soA'
+bot_api_key = os.environ.get('bot_API_KEY')
 botID = telepot.Bot(bot_api_key)
 
 # 用來處理收到的訊息
@@ -39,13 +39,18 @@ def save_user_id(user_id):
 
 MessageLoop(botID, handle).run_as_thread()  # 開啟監聽
 print("I'm listening...")
+sys.stdout.flush()
 
 
 while True:
     current_time = time.strftime('%H:%M')
-
+    print('go')
+    sys.stdout.flush()
+    climb.get()
     #到時候可以自行修改，想要幾點定時發送
-    # if current_time == '18:30':
-    #     climb.get()
+#    if current_time == '18:50':
+ #       print('gogogo')
+  #      sys.stdout.flush()
+   #     climb.get()
 
     time.sleep(60)  # 等待一分鐘
