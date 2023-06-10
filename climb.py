@@ -12,7 +12,8 @@ import telepot
 
 
 # bot ID
-botID = telepot.Bot('6017449076:AAER3OOrIPdw93ACASumlrCqNn7-14u4soA')
+bot_api_key = os.environ.get('bot_API_KEY')
+botID = telepot.Bot(bot_api_key)
 
 #進入該網站
 def get_web_page(url):
@@ -46,8 +47,10 @@ def get_web_page(url):
 
 #把 dictionary 丟給chatGpt3 整理成大綱
 def get_outline(data):
-    # openai api key 替換成自己的
-    openai.api_key ='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'
+    
+    openAI_API_KEY = os.environ.get('openAI_API_KEY')
+    openai.api_key =openAI_API_KEY
+
 
 
     #將 data['context'] 轉成 string
@@ -89,14 +92,8 @@ def send_daily_message(data,ans):
     for user_id in user_ids:
         botID.sendMessage(user_id, message)
 
-
-
-
-    #另外存成 json 檔，給 bot 使用
     save_output_as_json(data, ans['content'])
     
-
-
 def save_output_as_json(data,ans):
 
     # 檔案名稱
@@ -149,7 +146,7 @@ def save_output_as_json(data,ans):
 
 
 
-def get():
+def gett():
     r = requests.get("https://thehackernews.com/") #將網頁資料GET下來
     soup = BeautifulSoup(r.text,"html.parser") #將網頁資料以html.parser
 
@@ -188,26 +185,3 @@ def get():
     for i in range(len(dates)):
         if(dates[i]==formatted_date):
             get_web_page(links[i])
-
-
-
-
-    # while True:
-
-    #     current_time = time.strftime('%H:%M')
-
-    #     if current_time == '08:30':
-    #         telebot.send_daily_message()
-
-    #     time.sleep(60)  # 等待一分鐘
-
-# 指定時區（一定要指定，否則會失敗）
-# scheduler = BlockingScheduler(timezone="Asia/Shanghai")
-
-# scheduler.add_job(main, 'cron', day_of_week='1-6', hour=13, minute=6)
-
-# scheduler.start()
-
-
-#bot、main分開寫
-#bot.py 一直跑，main.py 每天執行一次 

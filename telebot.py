@@ -16,11 +16,10 @@ def handle(msg):
     chat_id = msg['chat']['id']  # 聊天室ID
     from_id = msg['from']['id']  # 使用者ID
     text = msg['text']  # 使用者傳來的訊息
-    botID.sendMessage(chat_id, 'Hello! ')
     # 儲存使用者ID
     if text == '/start':
         save_user_id(from_id)
-        botID.sendMessage(chat_id, 'Hello! I will send you a message every day.')
+        botID.sendMessage(chat_id, 'Hello ！會於每天的 18:00 準時發送 The Hacker News 當日新聞大綱！')
 
     # #設定時間
     # if text =='/timing':        
@@ -44,13 +43,14 @@ sys.stdout.flush()
 
 while True:
     current_time = time.strftime('%H:%M')
-    print('go')
-    sys.stdout.flush()
-    climb.get()
+#    print('go')
+#    sys.stdout.flush()
+ #   climb.get()
     #到時候可以自行修改，想要幾點定時發送
-#    if current_time == '18:50':
- #       print('gogogo')
-  #      sys.stdout.flush()
-   #     climb.get()
+    if current_time == '23:45':
+        print('gogogo')
+        sys.stdout.flush()
+        climb.get()
+        time.sleep(30)
 
-    time.sleep(60)  # 等待一分鐘
+    time.sleep(30)  
