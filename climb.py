@@ -59,9 +59,8 @@ def get_outline(data):
     #跟 gpt 溝通
     completion = openai.ChatCompletion.create(
       model="gpt-3.5-turbo",
-      #以繁體中文回答，並用項目符號條列式整理重點:
       messages=[
-        {"role": "system", "content": "將以下內容整理成100字的摘要，並使用台灣最常用的正體中文表達:"},
+        {"role": "system", "content": "將以下內容整理成100字的摘要，並用項目符號條列式整理重點，以台灣最常用的正體中文表達:"},
         {"role": "user", "content": articles},
       ]
     )

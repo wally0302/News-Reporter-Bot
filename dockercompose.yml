@@ -6,8 +6,9 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./user_ids.txt:/app/user_ids.txt
-      - /etc/localtime:/etc/localtime:ro
+      # - /etc/localtime:/etc/localtime:ro
     restart: always
     environment:
       - openAI_API_KEY=${openAI_API_KEY}
       - bot_API_KEY=${bot_API_KEY}
+      - TZ=Asia/Taipei
