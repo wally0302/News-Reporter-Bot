@@ -5,7 +5,9 @@ services:
       context: ./
       dockerfile: Dockerfile
     volumes:
-      - ./user_ids.txt:/app/user_ids.txt
+      - ./user_TheHackerNews.txt:/app/user_TheHackerNews.txt
+      - ./user_TechNews.txt:/app/user_TechNews.txt
+      - ./user_VentureBeat.txt:/app/user_VentureBeat.txt
       # - /etc/localtime:/etc/localtime:ro
     restart: always
     environment:

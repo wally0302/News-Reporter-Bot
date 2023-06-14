@@ -342,9 +342,8 @@ def get_venturebeat():
             dates.append(formatted_date)
         else:
             dates.append(None)
-
-
     NoNews=0
+    
     # enter_the_venturebeat(links[0])
 
     # 如果日期是今天，就進去該網站
@@ -357,4 +356,3 @@ def get_venturebeat():
             user_ids = file.read().splitlines()
         for user_id in user_ids:
             botID.sendMessage(user_id, '當日無新聞')
-
