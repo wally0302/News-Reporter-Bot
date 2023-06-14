@@ -1,14 +1,15 @@
 # 新聞播「Bot」員
 
 ## Concept Development
-我們意識到現今資訊大爆炸的時代中，使用者常常面臨一個問題：想要看新聞卻不知道從何看起。當他們進行搜尋時，總是被一大堆不同網站的新聞所淹沒，而每個新聞網站又擁有數十篇的新聞，使得使用者不得不花費大量時間去閱讀和篩選。
-
-為了解決這個問題，我們提出了一個創新的解決方案：透過 **Telegram bot 自動推送每日新聞大綱給予使用者**。我們的目標是讓使用者能夠輕鬆地獲取當天的新聞概要，並清楚地知道每則新聞的內容。
-
-這次選擇的網站為 : [The Hacker News](https://thehackernews.com/)
+- 我們意識到現今資訊大爆炸的時代中，使用者常常面臨一個問題：想要看新聞卻不知道從何看起，當他們進行搜尋時，總是被一大堆不同網站的新聞所淹沒，而每個新聞網站又擁有數十篇的新聞，使得使用者不得不花費大量時間去閱讀和篩選。
+- 為了解決這個問題，我們提出了一個創新的解決方案：透過 **Telegram bot 自動推送每日新聞大綱給予使用者**。我們的目標是讓使用者能夠輕鬆地獲取當天的新聞概要，並清楚地知道每則新聞的內容。
+- 這次選擇的網站為 : 
+    1. [The Hacker News](https://thehackernews.com/)
+    2. [TechNews 科技新報 - AI 人工智慧](https://technews.tw/category/ai/)
+    3. [VentureBeat](https://venturebeat.com/)
 ## Function
 - ![](https://hackmd.io/_uploads/rJTPu3Mvn.png)
-    - 將爬蟲的新聞資料透過 Chatgpt 整理成為簡短的大綱，並利用 Telegram bot 當媒介，定時將每天的新聞大綱傳輸給使用者，方便使用者讀取。
+- 將爬蟲的新聞資料透過 Chatgpt 整理成為簡短的大綱，並利用 Telegram bot 當媒介，定時將每天的新聞大綱傳輸給使用者，方便使用者讀取。
 ## Implementation Resources
 - 使用 Linux Ubuntu 作業系統
 - 爬蟲：BeautifulSoup
@@ -41,12 +42,13 @@
 ### Telegram bot
 1. 在 telegram 中搜尋， [@BotFather](https://t.me/BotFather)
     - ![](https://hackmd.io/_uploads/BJ10vsMP2.png) 
-- ![](https://hackmd.io/_uploads/SJVOFiMD2.png)
+    - ![](https://hackmd.io/_uploads/SJVOFiMD2.png)
+5. 建立完成新的 bot 回將會取得 token，即可使用此 token 編輯 telegram bot 執行檔案
 ## Usage
 1. 下載 GitHub 專案
     - `git clone https://github.com/wally0302/LSA_final`
 2. `cd LSA_fianl/`
-3. 去 `.env`修改成自己的 openai Key & telegram bot key
+3. 創立一個 `.env`檔案存 openai Key & telegram bot key
     - ![](https://hackmd.io/_uploads/SkT34oMw3.png)
 4. 可以去 `climb.py` 修改 prompt
     - ![](https://hackmd.io/_uploads/ByBnriGP2.png)
@@ -54,29 +56,30 @@
     - ![](https://hackmd.io/_uploads/BkmBZ2Gvn.png) 
 6. 建立 image :`docker-compose build`
 7. 啟動 : `docker-compose up`
+8. 開啟 Telegram bot 輸入 `/start` 即可開始使用 bot
 ## Demo
 
 ## Problem
 - selenium 問題
-    - 原先在爬蟲，我們使用的是 Selenium，但後來測試時發現執行起來速度太慢，運行起來很卡，因此替換成 BeautifulSoup
+    - 原先在爬蟲部分，我們使用的是 Selenium，但後來測試時發現執行起來速度太慢，運行起來很卡
+    - 解決方法：替換成 BeautifulSoup
 - OpenAI 問題
-    - 因一個 Key 的上限為 5 美元，因此執行時需消耗大量的 OpenAI Key，沒辦法一直重複測試（除非一直重新申請 OpenAI Key）
+    - 不能一直太多 request 
 
-- 一開始在本機跑程式可以執行成功，但後來放去 Container 裡面，就發現他永遠跑不動...
-    - 後來發現是因為 Container 時區不一致 :-1: 
-        - ![](https://hackmd.io/_uploads/HyqGBMMv2.png)
-    - 解決 : 
-        - 編輯 `docker-compose.yml` ， 將主機的時區掛載到容器中
+- Container 執行問題
+    - 一開始在本機執行程式時可以執行成功，但後來放至 Container 裡面執行，發現他永遠跑不動...
+        - 後來發現是因為本機時區與 Container 時區不一致 :-1: 
+            - ![](https://hackmd.io/_uploads/HyqGBMMv2.png)
+        - 解決方法 : 
+            - 編輯 `docker-compose.yml` ， 將主機的時區掛載到容器中使其一致
             - ![](https://hackmd.io/_uploads/HyXmwGMD2.png) 
-    - 但後來想在 aws 上執行，發現時區也不一致
+- AWS 執行問題
+    - 後來想在 AWS 上執行，發現時區也不一致因此無法執行
         - ![](https://hackmd.io/_uploads/H1NQAffv2.png)
-    - 解決 : 
+    - 解決方法 : 
         - 編輯 `docker-compose.yml` ，加入您所在的時區
-            - ![](https://hackmd.io/_uploads/H19VCzfvh.png)
+        - ![](https://hackmd.io/_uploads/H19VCzfvh.png)
  
-
-
-
 ## Thankful
 - 惠霖學姊
 - 柏瑋學長
