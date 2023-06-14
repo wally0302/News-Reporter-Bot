@@ -36,11 +36,11 @@ def handle(msg):
 # 儲存使用者ID
 def save_user_id(user_id):
     #如果有此ID則不做任何動作
-    with open('user_ids.txt', 'r') as file:
+    with open('user_TheHackerNews.txt', 'r') as file:
         if str(user_id) in file.read():
             return
     #如果沒有此ID則儲存        
-    with open('user_ids.txt', 'a') as file:
+    with open('user_TheHackerNews.txt', 'a') as file:
         file.write(str(user_id) + '\n')
 
 

@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 import datetime
 import openai
 import telepot
-
 #Aws
 import boto3
 import logging
@@ -13,12 +12,13 @@ import logging
 #docker
 bot_api_key = os.environ.get('bot_API_KEY')
 
-# bot_api_key=
 
 botID = telepot.Bot(bot_api_key)
 
 
 def enter_the_venturebeat(url):
+
+    index=2
     r = requests.get(url) 
     soup = BeautifulSoup(r.text,"html.parser")
 
@@ -38,12 +38,13 @@ def enter_the_venturebeat(url):
     data['url'] = url
 
     #將 data 傳給 chatGpt3
-    get_outline(data,data['context'])
+    get_outline(data,data['context'],index)
 
 
 
 #進入 technews
 def enter_the_technews(url):
+    index=1
     r = requests.get(url) 
     soup = BeautifulSoup(r.text,"html.parser")
 
@@ -63,7 +64,7 @@ def enter_the_technews(url):
     data['url'] = url
 
     #將 data 傳給 chatGpt3
-    get_outline(data,data['context'])
+    get_outline(data,data['context'],index)
 
 
 
@@ -73,6 +74,7 @@ def enter_the_technews(url):
 
 #進入 hackernews
 def enter_the_hackernews(url):
+    index=0
     r = requests.get(url) #將網頁資料GET下來
     soup = BeautifulSoup(r.text,"html.parser") #將網頁資料以html.parser
 
@@ -101,20 +103,18 @@ def enter_the_hackernews(url):
     articles = ''.join(data['context'])
     
     #將 data 傳給 chatGpt3
-    get_outline(data,articles)
+    get_outline(data,articles,index)
 
 
 
 
 #把 dictionary 丟給chatGpt3 整理成大綱
-def get_outline(data,articles):
+def get_outline(data,articles,index):
     
+    news=index#判別是哪個新聞網站
     #docker 專用
     openAI_API_KEY = os.environ.get('openAI_API_KEY')
     openai.api_key =openAI_API_KEY
-
-    # 本機
-    # openai.api_key =
 
 
 
@@ -138,27 +138,40 @@ def get_outline(data,articles):
     print('大綱 : '+ans['content'])
     print("\n")
     print("--------------------------------------------------")
-    send_daily_message(data,ans)
+    send_daily_message(data,ans,news)
     
 # bot 發送訊息
-def send_daily_message(data,ans):
-    with open('user_ids.txt', 'r') as file:
-        user_ids = file.read().splitlines()
+def send_daily_message(data,ans,news):
+    if news==0: #TheHackerNews
+        with open('user_TheHackerNews.txt', 'r') as file:
+            user_ids = file.read().splitlines()
+    elif news==1: #technews
+        with open('user_TechNews.txt', 'r') as file:
+            user_ids = file.read().splitlines()
+    elif news==2: #VentureBeat
+        with open('user_VentureBeat.txt', 'r') as file:
+            user_ids = file.read().splitlines()
     
     message = '標題 : ' + data['title'] + '\n\n' \
               '網址 : ' + data['url']+ '\n\n' \
               '大綱 : ' + ans['content'] + '\n\n' \
     
-
     for user_id in user_ids:
         botID.sendMessage(user_id, message)
 
-    save_output_as_json(data, ans['content'])
+    save_output_as_json(data, ans['content'],news)
     
-def save_output_as_json(data,ans):
+def save_output_as_json(data,ans,news):
+
+    if news==0:
+        name='TheHackerNews'
+    elif news==1:
+        name='TechNews'
+    elif news==2:
+        name='VentureBeat'
 
     # 檔案名稱
-    json_file = 'article_' + str(datetime.date.today()) + '.json'  # article_2023-06-05.json
+    json_file = 'article_' + name + '_'+str(datetime.date.today()) + '.json'  # article_TheHackerNews_2023-06-05.json
 
     try:
         # 嘗試讀取現有資料
@@ -202,10 +215,6 @@ def upload_file(file_name, bucket, object_name=None):
         logging.error(e)
         return False
     return True
-    
-
-
-
 
 def get_hackernews():
     r = requests.get("https://thehackernews.com/") #將網頁資料GET下來
@@ -239,14 +248,20 @@ def get_hackernews():
             #去除第一個符號
             dates.append(total[i].find('span',class_='h-datetime').text[1:])
 
-
     # enter_the_hackernews(links[0])
 
-    # 如果日期是今天，就進去該網站
+    NoNews=0
+    # 如果日期是今天，就進去該網站，如果沒有則寄送當日無新聞
     for i in range(len(dates)):
         if(dates[i]==formatted_date):
             enter_the_hackernews(links[i])
+            NoNews=1
 
+    if(NoNews==0):
+        with open('user_TheHackerNews.txt', 'r') as file:
+            user_ids = file.read().splitlines()
+        for user_id in user_ids:
+            botID.sendMessage(user_id, '當日無新聞')
 
 
 def get_technews():
@@ -276,13 +291,21 @@ def get_technews():
         date_obj=datetime.datetime.strptime((date[1].text.strip()), "%Y 年 %m 月 %d 日 %H:%M").strftime("%Y-%m-%d")
         dates.append(date_obj)
 
-
+    NoNews=0
     # enter_the_technews(links[0])
 
     # 如果日期是今天，就進去該網站
     for i in range(len(dates)):
         if(dates[i]==str(today)):
             enter_the_technews(links[i])
+            NoNews=1
+
+    if(NoNews==0):
+        with open('user_TechNews.txt', 'r') as file:
+            user_ids = file.read().splitlines()
+        for user_id in user_ids:
+            botID.sendMessage(user_id, '當日無新聞')
+
 
 
 def get_venturebeat():
@@ -321,12 +344,17 @@ def get_venturebeat():
             dates.append(None)
 
 
-
+    NoNews=0
     # enter_the_venturebeat(links[0])
 
     # 如果日期是今天，就進去該網站
     for i in range(len(dates)):
         if(dates[i]==str(today)):
             enter_the_venturebeat(links[i])
-
+            NoNews=1
+    if(NoNews==0):
+        with open('user_VentureBeat.txt', 'r') as file:
+            user_ids = file.read().splitlines()
+        for user_id in user_ids:
+            botID.sendMessage(user_id, '當日無新聞')
 

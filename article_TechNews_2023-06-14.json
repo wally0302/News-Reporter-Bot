@@ -1,0 +1,12 @@
+[
+  {
+    "標題": "老黃要小心！直擊 AMD 全新 MI 300X 人工智慧晶片發表",
+    "網址": "https://technews.tw/2023/06/14/amds-new-mi-300x-artificial-intelligence-chip/",
+    "大綱": "AMD 在人工智慧技術發表會上釋出一系列消息，展現如何推展 AI 平台策略，提供客戶涵蓋雲端、邊緣、終端的硬體產品，結合與業界進行的深度軟體合作，發展可擴充與全方位的 AI 解決方案。\n- AMD Instinct MI 300 系列加速器產品線的最新細節瞄準競爭對手輝達 (NVIDIA)。\n- AMD Instinct MI 300X 加速器為全球最先進的生成式 AI 加速器，採用新一代 AMD CDNA 3 加速器架構，支援高達 192 GB 的 HBM3 記憶體，提供大型語言模型推導與生成式 AI 工作負載所需的運算力與記憶體效率。\n- 憑藉 AMD Instinct MI 300X 的大容量記憶體，客戶可處理 Falcon-40B 等大型語言模型，僅需使用一個 MI300X GPU 加速器，就能處理 400 億個參數的模型。\n- AMD 推出 AMD Infinity 架構平台，將 8 個 MI 300X 加速器整合至業界標準設計，打造極致的生成式 AI 推論與訓練環境。\n- AMD Instinct MI 300X 提供的 HBM 鎮存記憶體是 NVIDIA H100 的 2.4 倍，HBM 頻寬是 H100 的 1.6 倍。\n- AMD 同時推出 AMD Instinct MI 300A，為針對 HPC 與 AI 工作負載所開發的全球首款 APU 加速器，現已開始向客戶送樣。"
+  },
+  {
+    "標題": "老黃要小心！直擊 AMD 全新 MI 300X 人工智慧晶片發表",
+    "網址": "https://technews.tw/2023/06/14/amds-new-mi-300x-artificial-intelligence-chip/",
+    "大綱": "- AMD在舊金山舉行的「資料中心與人工智慧技術發表會」上釋出一系列消息\n- AMD推展AI平台策略，提供客戶涵蓋雲端、邊緣、終端的硬體產品，結合與業界進行的深度軟體合作，發展可擴充與全方位的AI解決方案\n- AMD Instinct MI 300X 加速器為全球最先進的生成式AI加速器\n- MI 300X 採用新一代AMD CDNA 3加速器架構，支援高達192GB的HBM3記憶體，提供大型語言模型推導與生成式AI工作負載所需的運算力與記憶體效率\n- 憑藉AMD Instinct MI 300X的大容量記憶體，客戶可處理Falcon-40B等大型語言模型\n- 單個MI 300X可以運行高達800億個參數模型的強大性能\n- MI 300X提供的HBM鎮存記憶體是NVIDIA H100的2.4倍，HBM頻寬是H100的1.6倍\n- AMD推出AMD Infinity架構平台，將8個MI 300X加速器整合至業界標準設計，打造極致的生成式AI推論與訓練環境\n- AMD Instinct MI 300A為針對HPC與AI工作負載所開發的全球首款APU加速器，現已開始向客戶送樣"
+  }
+]
