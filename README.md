@@ -65,7 +65,6 @@
     - 解決方法：替換成 BeautifulSoup
 - OpenAI 問題
     - 不能一次太多 request 
-
 - Container 執行問題
     - 一開始在本機執行程式時可以執行成功，但後來放至 Container 裡面執行，發現他永遠跑不動...
         - 後來發現是因為本機時區與 Container 時區不一致 :-1: 
@@ -76,10 +75,9 @@
 - AWS 執行問題
     - 後來想在 AWS 上執行，發現時區也不一致因此無法執行
         - ![](https://hackmd.io/_uploads/H1NQAffv2.png)
-    - 解決方法 : 
+    - 解決方法
         - 編輯 `docker-compose.yml` ，加入您所在的時區
         - ![](https://hackmd.io/_uploads/H19VCzfvh.png)
- 
 ## Thankful
 - 惠霖學姊
 - 柏瑋學長
@@ -87,7 +85,7 @@
 | 組員| 工作分配|
 | -------- | -------- |
 | 黃郁庭    | 程式撰寫、文件     | 
-| 張可葭    | telegram bot、文件     | 
+| 張可葭    | telegram bot、文件 | 
 
 ## References
 - [Telegram bot](https://oscarada87.github.io/2019/05/25/%E7%94%A8-Python-%E6%89%93%E9%80%A0%E8%87%AA%E5%B7%B1%E7%9A%84-Telegram-Bot/)
