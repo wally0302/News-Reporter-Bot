@@ -64,7 +64,7 @@
     - 原先在爬蟲部分，我們使用的是 Selenium，但後來測試時發現執行起來速度太慢，運行起來很卡
     - 解決方法：替換成 BeautifulSoup
 - OpenAI 問題
-    - 不能一直太多 request 
+    - 不能一次太多 request 
 
 - Container 執行問題
     - 一開始在本機執行程式時可以執行成功，但後來放至 Container 裡面執行，發現他永遠跑不動...
