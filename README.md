@@ -46,7 +46,7 @@
 1. 下載 GitHub 專案
     - `git clone https://github.com/wally0302/LSA_final`
 2. `cd LSA_fianl/`
-3. 創立一個 `.env`檔案存 openai Key & telegram bot key
+3. 去 `.env`修改成自己的 openai Key & telegram bot key
     - ![](https://hackmd.io/_uploads/SkT34oMw3.png)
 4. 可以去 `climb.py` 修改 prompt
     - ![](https://hackmd.io/_uploads/ByBnriGP2.png)

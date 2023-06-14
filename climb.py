@@ -6,17 +6,73 @@ import datetime
 import openai
 import telepot
 
-# #Aws
-# import boto3
-# import logging
+#Aws
+import boto3
+import logging
 
-
-# bot ID
+#docker
 bot_api_key = os.environ.get('bot_API_KEY')
+
+# bot_api_key=
+
 botID = telepot.Bot(bot_api_key)
 
-#進入該網站
-def get_web_page(url):
+
+def enter_the_venturebeat(url):
+    r = requests.get(url) 
+    soup = BeautifulSoup(r.text,"html.parser")
+
+    # 標題
+    title = soup.find('h1',class_='article-title')
+    # 內文
+    context = soup.find('div',class_='article-content')
+
+    
+    #創建一個 key-value 的 dictionary
+    data = {}
+    #將 title 加進 dictionary
+    data['title'] = title.text
+    #將 context 加進 dictionary
+    data['context'] = context.text
+    #將 url 加進 dictionary
+    data['url'] = url
+
+    #將 data 傳給 chatGpt3
+    get_outline(data,data['context'])
+
+
+
+#進入 technews
+def enter_the_technews(url):
+    r = requests.get(url) 
+    soup = BeautifulSoup(r.text,"html.parser")
+
+    # 標題
+    title = soup.find('h1',class_='entry-title')
+    # 內文
+    context = soup.find('div',class_='indent')
+
+    
+    #創建一個 key-value 的 dictionary
+    data = {}
+    #將 title 加進 dictionary
+    data['title'] = title.text
+    #將 context 加進 dictionary
+    data['context'] = context.text
+    #將 url 加進 dictionary
+    data['url'] = url
+
+    #將 data 傳給 chatGpt3
+    get_outline(data,data['context'])
+
+
+
+
+
+
+
+#進入 hackernews
+def enter_the_hackernews(url):
     r = requests.get(url) #將網頁資料GET下來
     soup = BeautifulSoup(r.text,"html.parser") #將網頁資料以html.parser
 
@@ -41,26 +97,32 @@ def get_web_page(url):
     #將 url 加進 dictionary
     data['url'] = url
 
+    #將 data['context'] 轉成 string
+    articles = ''.join(data['context'])
     
     #將 data 傳給 chatGpt3
-    get_outline(data)
+    get_outline(data,articles)
+
+
+
 
 #把 dictionary 丟給chatGpt3 整理成大綱
-def get_outline(data):
+def get_outline(data,articles):
     
+    #docker 專用
     openAI_API_KEY = os.environ.get('openAI_API_KEY')
     openai.api_key =openAI_API_KEY
 
+    # 本機
+    # openai.api_key =
 
 
-    #將 data['context'] 轉成 string
-    articles = ''.join(data['context'])
 
     #跟 gpt 溝通
     completion = openai.ChatCompletion.create(
       model="gpt-3.5-turbo",
       messages=[
-        {"role": "system", "content": "將以下內容整理成100字的摘要，並用項目符號條列式整理重點，以台灣最常用的正體中文表達:"},
+        {"role": "system", "content": "將以下內容用項目符號條列式整理重點，以台灣最常用的正體中文表達:"},
         {"role": "user", "content": articles},
       ]
     )
@@ -120,32 +182,32 @@ def save_output_as_json(data,ans):
     with open(json_file, 'w', encoding='utf-8') as f:
         json.dump(original_data, f, indent=2, ensure_ascii=False)
     
-#     result_upload = upload_file(json_file, "wallys3demo", json_file)
-#     if result_upload :
-#         print("bucket file uploaded successfully..!")
-#     else:
-#         print("bucket file upload failed..!")
+    result_upload = upload_file(json_file, "wallys3demo", json_file)
+    if result_upload :
+        print("bucket file uploaded successfully..!")
+    else:
+        print("bucket file upload failed..!")
 
-# #s3 服務
-# def upload_file(file_name, bucket, object_name=None):
-#     # If S3 object_name was not specified, use file_name
-#     if object_name is None:
-#         object_name = os.path.basename(file_name)
+#s3 服務
+def upload_file(file_name, bucket, object_name=None):
+    # If S3 object_name was not specified, use file_name
+    if object_name is None:
+        object_name = os.path.basename(file_name)
 
-#     # Upload the file
-#     s3_client = boto3.client('s3')
-#     try:
-#         response = s3_client.upload_file(file_name, bucket, object_name)
-#     except Exception as e:
-#         logging.error(e)
-#         return False
-#     return True
+    # Upload the file
+    s3_client = boto3.client('s3')
+    try:
+        response = s3_client.upload_file(file_name, bucket, object_name)
+    except Exception as e:
+        logging.error(e)
+        return False
+    return True
     
 
 
 
 
-def gett():
+def get_hackernews():
     r = requests.get("https://thehackernews.com/") #將網頁資料GET下來
     soup = BeautifulSoup(r.text,"html.parser") #將網頁資料以html.parser
 
@@ -178,9 +240,93 @@ def gett():
             dates.append(total[i].find('span',class_='h-datetime').text[1:])
 
 
-    # get_web_page(links[0])
+    # enter_the_hackernews(links[0])
 
     # 如果日期是今天，就進去該網站
     for i in range(len(dates)):
         if(dates[i]==formatted_date):
-            get_web_page(links[i])
+            enter_the_hackernews(links[i])
+
+
+
+def get_technews():
+    headers = {'Cache-Control': 'no-cache'}
+
+    r = requests.get("https://technews.tw/category/ai/", headers=headers) #將網頁資料GET下來
+    soup = BeautifulSoup(r.text,"html.parser") #將網頁資料以html.parser
+    #今天日期
+    today = datetime.date.today()
+
+    total = soup.find_all('header',class_='entry-header')
+
+    #array
+    titles=[]
+    links=[]
+    dates=[]
+
+    for i in range(len(total)):
+        #標題
+        title = total[i].find('h1',class_='entry-title')
+        titles.append(title.text)
+        #超連結
+        link = total[i].find('a')['href']
+        links.append(link)
+        #日期
+        date=total[i].find_all('span',class_='body') #本來格式為 "2023 年 06 月 13 日 8:30" ->  "2023-06-13"
+        date_obj=datetime.datetime.strptime((date[1].text.strip()), "%Y 年 %m 月 %d 日 %H:%M").strftime("%Y-%m-%d")
+        dates.append(date_obj)
+
+
+    # enter_the_technews(links[0])
+
+    # 如果日期是今天，就進去該網站
+    for i in range(len(dates)):
+        if(dates[i]==str(today)):
+            enter_the_technews(links[i])
+
+
+def get_venturebeat():
+    headers = {'Cache-Control': 'no-cache'}
+
+    r = requests.get("https://venturebeat.com/", headers=headers) #將網頁資料GET下來
+    soup = BeautifulSoup(r.text,"html.parser") #將網頁資料以html.parser
+
+    #今天日期
+    today = datetime.date.today()
+    formatted_date = today.strftime("%b %d, %Y")# Jun 05, 2023
+
+    total = soup.find_all('header',class_='ArticleListing__body')
+    
+    #array
+    titles=[]
+    links=[]
+    dates=[]
+
+    for i in range(len(total)):
+        #標題
+        title = total[i].find('h2',class_='ArticleListing__title')
+        # print(title.text)
+        titles.append(title.text)
+        #超連結
+        link = total[i].find('a')['href']
+        # print(link)
+        links.append(link)
+        #日期
+        date = total[i].find('time', class_='ArticleListing__time')
+        if date is not None:
+            date_obj = datetime.datetime.strptime(date.text.strip(), "%B %d, %Y %I:%M %p")
+            formatted_date = date_obj.strftime("%b %d, %Y")
+            dates.append(formatted_date)
+        else:
+            dates.append(None)
+
+
+
+    # enter_the_venturebeat(links[0])
+
+    # 如果日期是今天，就進去該網站
+    for i in range(len(dates)):
+        if(dates[i]==str(today)):
+            enter_the_venturebeat(links[i])
+
+

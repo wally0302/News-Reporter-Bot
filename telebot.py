@@ -5,10 +5,12 @@ from pprint import pprint
 import climb
 import os 
 import sys
-print('123')
+from telepot.namedtuple import ReplyKeyboardMarkup
+
 
 # bot ID
-bot_api_key = os.environ.get('bot_API_KEY')
+# bot_api_key = os.environ.get('bot_API_KEY')
+bot_api_key='6017588708:AAEjzA2PxvvIHf4gJiXkGEmfOpPCuBcUEV8'
 botID = telepot.Bot(bot_api_key)
 
 # 用來處理收到的訊息
@@ -20,10 +22,16 @@ def handle(msg):
     if text == '/start':
         save_user_id(from_id)
         botID.sendMessage(chat_id, 'Hello ！會於每天的 18:00 準時發送 The Hacker News 當日新聞大綱！')
+        # buttons = [["The Hacker News"], ["TechNews科技新報 - AI 人工智慧"],["以上都要"]]
+        # keyboard_markup = ReplyKeyboardMarkup(keyboard=buttons)
+        # botID.sendMessage(chat_id=chat_id, text="請選擇網站", reply_markup=keyboard_markup)
 
     # #設定時間
     # if text =='/timing':        
     #     botID.sendMessage(chat_id, '請輸入時間 (格式為 HH:MM)')
+
+
+
 
 # 儲存使用者ID
 def save_user_id(user_id):
@@ -43,14 +51,12 @@ sys.stdout.flush()
 
 while True:
     current_time = time.strftime('%H:%M')
-#    print('go')
-#    sys.stdout.flush()
- #   climb.get()
     #到時候可以自行修改，想要幾點定時發送
     if current_time == '23:45':
         print('gogogo')
         sys.stdout.flush()
-        climb.get()
+        climb.get_hackernews()
+
         time.sleep(30)
 
     time.sleep(30)  

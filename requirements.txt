@@ -4,3 +4,4 @@ openai
 requests
 telebot
 telepot
+python-telegram-bot
