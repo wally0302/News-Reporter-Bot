@@ -8,8 +8,8 @@
     2. [TechNews 科技新報 - AI 人工智慧](https://technews.tw/category/ai/)
     3. [VentureBeat](https://venturebeat.com/)
 ## Function
-- ![](https://hackmd.io/_uploads/rJTPu3Mvn.png)
-- 將爬蟲的新聞資料透過 Chatgpt 整理成為簡短的大綱，並利用 Telegram bot 當媒介，定時將每天的新聞大綱傳輸給使用者，方便使用者讀取。
+- ![](https://hackmd.io/_uploads/B1nP9rdD3.png)
+- 將爬蟲的新聞資料透過 openAI API 整理成為簡短的大綱，並利用 Telegram bot 當媒介，定時將每天的新聞大綱傳輸給使用者，方便使用者讀取。
 ## Implementation Resources
 - 使用 Linux Ubuntu 作業系統
 - 爬蟲：BeautifulSoup
