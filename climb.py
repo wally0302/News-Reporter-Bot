@@ -3,16 +3,16 @@ import os
 import requests
 from bs4 import BeautifulSoup
 import datetime
-import openai
+from openai import OpenAI
 import telepot
 #Aws
 import boto3
 import logging
 
 #docker
-bot_api_key = os.environ.get('bot_API_KEY')
+# bot_api_key = os.environ.get('bot_API_KEY')
 
-
+bot_api_key = ""
 botID = telepot.Bot(bot_api_key)
 
 
@@ -108,37 +108,41 @@ def enter_the_hackernews(url):
 
 
 
-#把 dictionary 丟給chatGpt3 整理成大綱
-def get_outline(data,articles,index):
-    
-    news=index#判別是哪個新聞網站
-    #docker 專用
-    openAI_API_KEY = os.environ.get('openAI_API_KEY')
-    openai.api_key =openAI_API_KEY
+def get_outline(data, articles, index):
+    news = index  # 判別是哪個新聞網站
 
+    # 設定 API 金鑰
+    # 對於 Docker 環境
+    # openAI_API_KEY = os.environ.get('openAI_API_KEY')
+    # openai.api_key = openAI_API_KEY
 
-
-    #跟 gpt 溝通
-    completion = openai.ChatCompletion.create(
-      model="gpt-3.5-turbo",
-      messages=[
-        {"role": "system", "content": "將以下內容用項目符號條列式整理重點，以台灣最常用的正體中文表達:"},
-        {"role": "user", "content": articles},
-      ]
+    client = OpenAI(
+        api_key='',  
     )
-    #gpt 回傳的結果
-    ans=completion.choices[0].message
+
+    completion = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "將以下內容用項目符號條列式整理重點，以台灣最常用的「正體中文」表達，這對我的事業非常重要:\n\n"+articles}
+        ]
+    )
 
 
 
-    print('標題 : '+data['title'])
+    # GPT-3 回傳的結果
+    ans = completion.choices[0].message
+    ans = ans.content
+
+    print('--------------------------------------------------')
+    print('標題 : ' + data['title'])
     print("\n")
-    print('網址 : '+data['url'])
+    print('網址 : ' + data['url'])
     print("\n")
-    print('大綱 : '+ans['content'])
+    print('大綱 : ' + ans)
     print("\n")
     print("--------------------------------------------------")
-    send_daily_message(data,ans,news)
+    send_daily_message(data, ans, news)
     
 # bot 發送訊息
 def send_daily_message(data,ans,news):
@@ -154,12 +158,12 @@ def send_daily_message(data,ans,news):
     
     message = '標題 : ' + data['title'] + '\n\n' \
               '網址 : ' + data['url']+ '\n\n' \
-              '大綱 : ' + ans['content'] + '\n\n' \
+              '大綱 : ' + ans + '\n\n' \
     
     for user_id in user_ids:
         botID.sendMessage(user_id, message)
 
-    save_output_as_json(data, ans['content'],news)
+    save_output_as_json(data, ans,news)
     
 def save_output_as_json(data,ans,news):
 
@@ -221,9 +225,13 @@ def get_hackernews():
     soup = BeautifulSoup(r.text,"html.parser") #將網頁資料以html.parser
 
     #今天日期
-    today = datetime.date.today()
-    formatted_date = today.strftime("%b %d, %Y")# Jun 05, 2023
+    # today = datetime.date.today()
+    # formatted_date = today.strftime("%b %d, %Y")# Jun 05, 2023
+    # print(formatted_date)
+    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    formatted_date = yesterday.strftime("%b %d, %Y")
 
+    
     #取得class="body-post clear"的tag
     total = soup.find_all('div',class_='body-post clear')
 
@@ -315,8 +323,11 @@ def get_venturebeat():
     soup = BeautifulSoup(r.text,"html.parser") #將網頁資料以html.parser
 
     #今天日期
-    today = datetime.date.today()
-    formatted_date = today.strftime("%b %d, %Y")# Jun 05, 2023
+    # today = datetime.date.today()
+    # formatted_date = today.strftime("%b %d, %Y")# Jun 05, 2023
+    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    formatted_date = yesterday.strftime("%b %d, %Y")
+    
 
     total = soup.find_all('header',class_='ArticleListing__body')
     
@@ -348,7 +359,7 @@ def get_venturebeat():
 
     # 如果日期是今天，就進去該網站
     for i in range(len(dates)):
-        if(dates[i]==str(today)):
+        if(dates[i]==str(yesterday)):
             enter_the_venturebeat(links[i])
             NoNews=1
     if(NoNews==0):
@@ -356,3 +367,4 @@ def get_venturebeat():
             user_ids = file.read().splitlines()
         for user_id in user_ids:
             botID.sendMessage(user_id, '當日無新聞')
+

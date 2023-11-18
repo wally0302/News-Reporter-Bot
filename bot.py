@@ -8,7 +8,7 @@ from telepot.namedtuple import ReplyKeyboardMarkup
 import os
 import climb
 # bot ID
-bot_api_key = os.environ.get('bot_API_KEY')
+bot_api_key = ''
 botID = telepot.Bot(bot_api_key)
 
 # 用來處理收到的訊息
@@ -70,14 +70,11 @@ sys.stdout.flush()
 while True:
     current_time = time.strftime('%H:%M')
     #到時候可以自行修改，想要幾點定時發送
-    if current_time == '14:12':
+    if current_time == '13:14':
         print('gogogo')
         sys.stdout.flush()
         climb.get_hackernews()
         climb.get_technews()
         climb.get_venturebeat()
-        time.sleep(30)
-
-
-    
+        time.sleep(30)    
     time.sleep(30)  
